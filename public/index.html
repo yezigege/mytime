@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线时钟</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+            transition: background-color 0.3s;
+        }
+
+        .clock-container {
+            display: flex;
+            gap: 50px;
+            margin-bottom: 30px;
+        }
+
+        .clock {
+            text-align: center;
+        }
+
+        #digital-clock {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .mode-buttons {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        #night-mode-btn {
+            background-color: #666;
+        }
+
+        .analog-clock {
+            width: 200px;
+            height: 200px;
+            border: 10px solid #333;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .hand {
+            position: absolute;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        #hour-hand {
+            width: 4px;
+            height: 80px;
+            top: 50px;
+            left: 98px;
+        }
+
+        #minute-hand {
+            width: 3px;
+            height: 90px;
+            top: 40px;
+            left: 98.5px;
+        }
+
+        #second-hand {
+            width: 2px;
+            height: 100px;
+            top: 30px;
+            left: 99px;
+            background-color: red;
+        }
+
+        .night-mode {
+            background-color: #333;
+            color: white;
+        }
+
+        .night-mode .analog-clock {
+            border-color: white;
+        }
+
+        .night-mode .hand {
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        th, td {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .night-mode th {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="mode-buttons">
+        <button onclick="toggleClockType('digital')">数字</button>
+        <button onclick="toggleClockType('analog')">模拟</button>
+        <button id="night-mode-btn" onclick="toggleNightMode()">夜间模式</button>
+    </div>
+
+    <div class="clock-container">
+        <div class="clock" id="digital-clock-container">
+            <div id="digital-clock"></div>
+        </div>
+        <div class="clock" id="analog-clock-container">
+            <div class="analog-clock">
+                <div class="hand" id="hour-hand"></div>
+                <div class="hand" id="minute-hand"></div>
+                <div class="hand" id="second-hand"></div>
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>城市</th>
+                <th>时差（小时）</th>
+                <th>当前时间</th>
+            </tr>
+        </thead>
+        <tbody id="time-table">
+            <tr data-city="London" data-offset="-7">
+                <td>London</td>
+                <td>-7</td>
+                <td></td>
+            </tr>
+            <tr data-city="New York" data-offset="-12">
+                <td>New York</td>
+                <td>-12</td>
+                <td></td>
+            </tr>
+            <tr data-city="Tokyo" data-offset="1">
+                <td>Tokyo</td>
+                <td>1</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        let currentClock = 'digital';
+        const timeZones = document.querySelectorAll('[data-offset]');
+
+        function updateTime() {
+            const now = new Date();
+            const localTime = now.getTime();
+
+            // 更新数字时钟
+            const digitalTime = now.toLocaleString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('digital-clock').textContent = digitalTime;
+
+            // 更新模拟时钟
+            const hour = now.getHours() % 12;
+            const minute = now.getMinutes();
+            const second = now.getSeconds();
+
+            // 计算指针角度（360度制）
+            const hourAngle = (hour * 30) + (minute * 0.5);
+            const minuteAngle = minute * 6;
+            const secondAngle = second * 6;
+
+            document.getElementById('hour-hand').style.transform = `rotate(${hourAngle}deg)`;
+            document.getElementById('minute-hand').style.transform = `rotate(${minuteAngle}deg)`;
+            document.getElementById('second-hand').style.transform = `rotate(${secondAngle}deg)`;
+
+            // 更新时区时间
+            timeZones.forEach(zone => {
+                const offset = parseInt(zone.dataset.offset);
+                const zoneTime = new Date(localTime + offset * 3600000);
+                zone.querySelector('td:last-child').textContent = zoneTime.toLocaleString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            });
+        }
+
+        function toggleClockType(type) {
+            currentClock = type;
+            document.getElementById('digital-clock-container').style.display = (type === 'digital') ? 'block' : 'none';
+            document.getElementById('analog-clock-container').style.display = (type === 'analog') ? 'block' : 'none';
+        }
+
+        function toggleNightMode() {
+            document.body.classList.toggle('night-mode');
+        }
+
+        // 初始化时钟显示
+        toggleClockType(currentClock);
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>

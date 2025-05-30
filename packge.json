@@ -1,0 +1,11 @@
+{
+  "name": "online-clock",
+  "version": "1.0.0",
+  "description": "A simple clock website",
+  "scripts": {
+    "dev": "echo '开发命令'",
+    "build": "echo '构建命令'",
+    "start": "echo '启动命令'"
+  },
+  "license": "MIT"
+}
